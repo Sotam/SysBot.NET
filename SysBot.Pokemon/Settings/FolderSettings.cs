@@ -12,6 +12,9 @@ namespace SysBot.Pokemon
         [Category(FeatureToggle), Description("When enabled, dumps any received PKM files (trade results) to the DumpFolder.")]
         public bool Dump { get; set; }
 
+        [Category(FeatureToggle), Description("API URL: when not empty, sends any received PKM to the endpoint.")]
+        public string DumpUrl { get; set; } = string.Empty;
+
         [Category(Files), Description("Source folder: where PKM files to distribute are selected from.")]
         public string DistributeFolder { get; set; } = string.Empty;
 

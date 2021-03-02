@@ -1,4 +1,5 @@
-﻿using PKHeX.Core;
+﻿using Flurl.Http;
+using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Diagnostics;
@@ -141,6 +142,24 @@ namespace SysBot.Pokemon
             var fn = Path.Combine(dir, Util.CleanFileName(pk.FileName));
             File.WriteAllBytes(fn, pk.DecryptedPartyData);
             LogUtil.LogInfo($"Saved file: {fn}", "Dump");
+        }
+
+        public static void SendPokemon(string baseUrl, string type, PKM pk)
+        {
+            try
+            {
+                var request = new FlurlClient(baseUrl)
+                .Request()
+                .SetQueryParam("type", type);
+
+                request.PostJsonAsync(pk.DecryptedPartyData).Wait();
+
+                LogUtil.LogInfo($"Send request: {request.Url}", "Dump");
+            }
+            catch (FlurlHttpException e)
+            {
+                LogUtil.LogInfo($"Couldn't send request to {e.Call?.Request.Url}", "Dump");
+            }
         }
 
         /// <summary>

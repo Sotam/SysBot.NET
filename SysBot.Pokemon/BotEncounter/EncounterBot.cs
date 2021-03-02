@@ -207,8 +207,16 @@ namespace SysBot.Pokemon
             else
                 Counts.AddCompletedEncounters();
 
-            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                DumpPokemon(DumpSetting.DumpFolder, legends ? "legends" : "encounters", pk);
+            if (DumpSetting.Dump)
+            {
+                var subfolder = legends ? "legends" : "encounters";
+
+                if (!string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                    DumpPokemon(DumpSetting.DumpFolder, subfolder, pk);
+
+                if (!string.IsNullOrEmpty(DumpSetting.DumpUrl))
+                    SendPokemon(DumpSetting.DumpUrl, subfolder, pk);
+            }
 
             if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
             {

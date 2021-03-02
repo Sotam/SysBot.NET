@@ -296,7 +296,12 @@ namespace SysBot.Pokemon
                 {
                     Log($"Clone request (from {poke.Trainer.TrainerName}) has detected an invalid Pokémon: {(Species)clone.Species}.");
                     if (DumpSetting.Dump)
+                    {
                         DumpPokemon(DumpSetting.DumpFolder, "hacked", pk);
+
+                        if (!string.IsNullOrWhiteSpace(DumpSetting.DumpUrl))
+                            SendPokemon(DumpSetting.DumpUrl, "hacked", pk);
+                    }
 
                     var report = la.Report();
                     Log(report);
@@ -385,12 +390,25 @@ namespace SysBot.Pokemon
                 else
                     Hub.Counts.AddCompletedTrade();
 
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                if (DumpSetting.Dump)
                 {
                     var subfolder = poke.Type.ToString().ToLower();
-                    DumpPokemon(DumpSetting.DumpFolder, subfolder, traded); // received
-                    if (poke.Type == PokeTradeType.Specific || poke.Type == PokeTradeType.Clone)
-                        DumpPokemon(DumpSetting.DumpFolder, "traded", pkm); // sent to partner
+
+                    if (!string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                    {
+                        DumpPokemon(DumpSetting.DumpFolder, subfolder, traded); // received
+
+                        if (poke.Type == PokeTradeType.Specific || poke.Type == PokeTradeType.Clone)
+                            DumpPokemon(DumpSetting.DumpFolder, "traded", pkm); // sent to partner
+                    }
+
+                    if (!string.IsNullOrEmpty(DumpSetting.DumpUrl))
+                    {
+                        SendPokemon(DumpSetting.DumpUrl, subfolder, traded); // received
+
+                        if (poke.Type == PokeTradeType.Specific || poke.Type == PokeTradeType.Clone)
+                            SendPokemon(DumpSetting.DumpUrl, "traded", pkm); // sent to partner
+                    }
                 }
             }
 
@@ -415,8 +433,14 @@ namespace SysBot.Pokemon
                 // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
                 if (DumpSetting.Dump)
                 {
+                    // Received
                     var subfolder = detail.Type.ToString().ToLower();
-                    DumpPokemon(DumpSetting.DumpFolder, subfolder, pk); // received
+
+                    if (!string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                        DumpPokemon(DumpSetting.DumpFolder, subfolder, pk);
+
+                    if (!string.IsNullOrEmpty(DumpSetting.DumpUrl))
+                        SendPokemon(DumpSetting.DumpUrl, subfolder, pk);
                 }
 
                 var la = new LegalityAnalysis(pk);
@@ -555,8 +579,15 @@ namespace SysBot.Pokemon
             else
                 await ExitTrade(Hub.Config, true, token).ConfigureAwait(false);
 
-            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                DumpPokemon(DumpSetting.DumpFolder, "surprise", SurprisePoke);
+            if (DumpSetting.Dump)
+            {
+                if (!string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                    DumpPokemon(DumpSetting.DumpFolder, "surprise", SurprisePoke);
+
+                if (!string.IsNullOrEmpty(DumpSetting.DumpUrl))
+                    SendPokemon(DumpSetting.DumpUrl, "surprise", SurprisePoke);
+            }
+
             Hub.Counts.AddCompletedSurprise();
 
             return PokeTradeResult.Success;
@@ -568,8 +599,14 @@ namespace SysBot.Pokemon
 
             detail.TradeFinished(this, pk);
 
-            if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                DumpPokemon(DumpSetting.DumpFolder, "seed", pk);
+            if (DumpSetting.Dump)
+            {
+                if (!string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                    DumpPokemon(DumpSetting.DumpFolder, "seed", pk);
+
+                if (!string.IsNullOrEmpty(DumpSetting.DumpUrl))
+                    SendPokemon(DumpSetting.DumpUrl, "seed", pk);
+            }
 
             // Send results from separate thread; the bot doesn't need to wait for things to be calculated.
 #pragma warning disable 4014
@@ -602,8 +639,14 @@ namespace SysBot.Pokemon
                 Log("The Pokémon is already shiny!"); // Do not bother checking for next shiny frame
                 detail.SendNotification(this, "This Pokémon is already shiny! Raid seed calculation was not done.");
 
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                    DumpPokemon(DumpSetting.DumpFolder, "seed", result);
+                if (DumpSetting.Dump)
+                {
+                    if (!string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                        DumpPokemon(DumpSetting.DumpFolder, "seed", result);
+
+                    if (!string.IsNullOrEmpty(DumpSetting.DumpUrl))
+                        SendPokemon(DumpSetting.DumpUrl, "seed", result);
+                }
 
                 detail.TradeFinished(this, result);
                 return;

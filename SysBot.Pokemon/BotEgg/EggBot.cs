@@ -42,6 +42,7 @@ namespace SysBot.Pokemon
             {
                 Log("Destination slot is occupied! Dumping the Pokémon found there...");
                 DumpPokemon(DumpSetting.DumpFolder, "saved", existing);
+                SendPokemon(DumpSetting.DumpUrl, "saved", existing);
             }
             Log("Clearing destination slot to start the bot.");
             await SetBoxPokemon(Blank, InjectBox, InjectSlot, token).ConfigureAwait(false);
@@ -79,8 +80,14 @@ namespace SysBot.Pokemon
                 Log($"Encounter: {encounterCount}:{Environment.NewLine}{ShowdownParsing.GetShowdownText(pk)}{Environment.NewLine}");
                 Counts.AddCompletedEggs();
 
-                if (DumpSetting.Dump && !string.IsNullOrEmpty(DumpSetting.DumpFolder))
-                    DumpPokemon(DumpSetting.DumpFolder, "egg", pk);
+                if (DumpSetting.Dump)
+                {
+                    if (!string.IsNullOrEmpty(DumpSetting.DumpFolder))
+                        DumpPokemon(DumpSetting.DumpFolder, "egg", pk);
+
+                    if (!string.IsNullOrWhiteSpace(DumpSetting.DumpUrl))
+                        SendPokemon(DumpSetting.DumpUrl, "egg", pk);
+                }
 
                 if (StopConditionSettings.EncounterFound(pk, DesiredIVs, Hub.Config.StopConditions))
                 {
